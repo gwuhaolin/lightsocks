@@ -4,7 +4,7 @@ import (
 	"net"
 	"log"
 	"time"
-	"github.com/gwuhaolin/lightsocks/core"
+	"../core"
 )
 
 type LsLocal struct {

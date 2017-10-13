@@ -4,9 +4,9 @@ import (
 	"log"
 	"net"
 	"fmt"
-	"github.com/gwuhaolin/lightsocks/server"
-	"github.com/gwuhaolin/lightsocks/cmd"
-	"github.com/gwuhaolin/lightsocks/core"
+	"../../server"
+	"../../cmd"
+	"../../core"
 	"github.com/phayes/freeport"
 )
 

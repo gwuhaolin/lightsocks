@@ -1,10 +1,11 @@
 package server
 
 import (
-	"net"
 	"encoding/binary"
+	"net"
 	"time"
-	"github.com/gwuhaolin/lightsocks/core"
+
+	"../core"
 )
 
 type LsServer struct {
@@ -59,17 +60,17 @@ func (server *LsServer) handleConn(localConn *net.TCPConn) {
 	buf := make([]byte, 256)
 
 	/**
-	The localConn connects to the dstServer, and sends a ver
-   	identifier/method selection message:
-		   +----+----------+----------+
-                   |VER | NMETHODS | METHODS  |
-                   +----+----------+----------+
-                   | 1  |    1     | 1 to 255 |
-                   +----+----------+----------+
-	The VER field is set to X'05' for this ver of the protocol.  The
-   	NMETHODS field contains the number of method identifier octets that
-   	appear in the METHODS field.
-	 */
+		The localConn connects to the dstServer, and sends a ver
+	   	identifier/method selection message:
+			   +----+----------+----------+
+	                   |VER | NMETHODS | METHODS  |
+	                   +----+----------+----------+
+	                   | 1  |    1     | 1 to 255 |
+	                   +----+----------+----------+
+		The VER field is set to X'05' for this ver of the protocol.  The
+	   	NMETHODS field contains the number of method identifier octets that
+	   	appear in the METHODS field.
+	*/
 	// 第一个字段VER代表Socks的版本，Socks5默认为0x05，其固定长度为1个字节
 	_, err := server.DecodeRead(localConn, buf)
 	// 只支持版本5
@@ -78,25 +79,25 @@ func (server *LsServer) handleConn(localConn *net.TCPConn) {
 	}
 
 	/**
-	The dstServer selects from one of the methods given in METHODS, and
-   	sends a METHOD selection message:
+		The dstServer selects from one of the methods given in METHODS, and
+	   	sends a METHOD selection message:
 
-                         +----+--------+
-                         |VER | METHOD |
-                         +----+--------+
-                         | 1  |   1    |
-                         +----+--------+
-	 */
+	                         +----+--------+
+	                         |VER | METHOD |
+	                         +----+--------+
+	                         | 1  |   1    |
+	                         +----+--------+
+	*/
 	// 不需要验证，直接验证通过
 	server.EncodeWrite(localConn, []byte{0x05, 0x00})
 
 	/**
-	+----+-----+-------+------+----------+----------+
-        |VER | CMD |  RSV  | ATYP | DST.ADDR | DST.PORT |
-        +----+-----+-------+------+----------+----------+
-        | 1  |  1  | X'00' |  1   | Variable |    2     |
-        +----+-----+-------+------+----------+----------+
-	 */
+		+----+-----+-------+------+----------+----------+
+	        |VER | CMD |  RSV  | ATYP | DST.ADDR | DST.PORT |
+	        +----+-----+-------+------+----------+----------+
+	        | 1  |  1  | X'00' |  1   | Variable |    2     |
+	        +----+-----+-------+------+----------+----------+
+	*/
 
 	// CMD代表客户端请求的类型，值长度也是1个字节，有三种类型
 	// CONNECT X'01'
@@ -115,7 +116,7 @@ func (server *LsServer) handleConn(localConn *net.TCPConn) {
 	switch buf[3] {
 	case 0x01:
 		//	IP V4 address: X'01'
-		dIP = buf[4:4+net.IPv4len]
+		dIP = buf[4 : 4+net.IPv4len]
 	case 0x03:
 		//	DOMAINNAME: X'03'
 		ipAddr, err := net.ResolveIPAddr("ip", string(buf[5:n-2]))
@@ -125,7 +126,7 @@ func (server *LsServer) handleConn(localConn *net.TCPConn) {
 		dIP = ipAddr.IP
 	case 0x04:
 		//	IP V6 address: X'04'
-		dIP = buf[4:4+net.IPv6len]
+		dIP = buf[4 : 4+net.IPv6len]
 	default:
 		return
 	}
@@ -137,12 +138,12 @@ func (server *LsServer) handleConn(localConn *net.TCPConn) {
 	dstServer, err := net.DialTCP("tcp", nil, dstAddr)
 
 	/**
-	 +----+-----+-------+------+----------+----------+
-        |VER | REP |  RSV  | ATYP | BND.ADDR | BND.PORT |
-        +----+-----+-------+------+----------+----------+
-        | 1  |  1  | X'00' |  1   | Variable |    2     |
-        +----+-----+-------+------+----------+----------+
-	 */
+		 +----+-----+-------+------+----------+----------+
+	        |VER | REP |  RSV  | ATYP | BND.ADDR | BND.PORT |
+	        +----+-----+-------+------+----------+----------+
+	        | 1  |  1  | X'00' |  1   | Variable |    2     |
+	        +----+-----+-------+------+----------+----------+
+	*/
 	if err != nil {
 		return
 	} else {
