@@ -7,18 +7,36 @@ import (
 
 	"flag"
 
+	"../../cmd"
 	"../../core"
 	"../../local"
+)
+
+const (
+	DefaultListenAddr = ":7448"
 )
 
 var version = "master"
 
 func main() {
 	log.SetFlags(log.Lshortfile)
+
 	passwd := flag.String("password", "", "")
 	rmt := flag.String("remote", "", "")
-	listen := flag.String("listen", ":7448", "")
+	listen := flag.String("listen", DefaultListenAddr, "")
 	flag.Parse()
+
+	if *rmt == "" || *passwd == "" {
+		config := &cmd.Config{
+			ListenAddr: DefaultListenAddr,
+		}
+		config.ReadConfig()
+		config.SaveConfig()
+
+		*rmt = config.RemoteAddr
+		*passwd = config.Password
+		*listen = config.ListenAddr
+	}
 
 	password, err := core.ParsePassword(*passwd)
 	if err != nil {
