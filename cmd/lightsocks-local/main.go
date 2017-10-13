@@ -1,12 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
-	"fmt"
-	"github.com/gwuhaolin/lightsocks/local"
-	"github.com/gwuhaolin/lightsocks/cmd"
-	"github.com/gwuhaolin/lightsocks/core"
+
+	"flag"
+
+	"../../cmd"
+	"../../core"
+	"../../local"
 )
 
 const (
@@ -18,22 +21,32 @@ var version = "master"
 func main() {
 	log.SetFlags(log.Lshortfile)
 
-	var err error
-	config := &cmd.Config{
-		ListenAddr: DefaultListenAddr,
-	}
-	config.ReadConfig()
-	config.SaveConfig()
+	passwd := flag.String("password", "", "")
+	rmt := flag.String("remote", "", "")
+	listen := flag.String("listen", DefaultListenAddr, "")
+	flag.Parse()
 
-	password, err := core.ParsePassword(config.Password)
+	if *rmt == "" || *passwd == "" {
+		config := &cmd.Config{
+			ListenAddr: DefaultListenAddr,
+		}
+		config.ReadConfig()
+		config.SaveConfig()
+
+		*rmt = config.RemoteAddr
+		*passwd = config.Password
+		*listen = config.ListenAddr
+	}
+
+	password, err := core.ParsePassword(*passwd)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	listenAddr, err := net.ResolveTCPAddr("tcp", config.ListenAddr)
+	listenAddr, err := net.ResolveTCPAddr("tcp", *listen)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	remoteAddr, err := net.ResolveTCPAddr("tcp", config.RemoteAddr)
+	remoteAddr, err := net.ResolveTCPAddr("tcp", *rmt)
 	if err != nil {
 		log.Fatalln(err)
 	}
