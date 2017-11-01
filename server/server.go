@@ -98,6 +98,12 @@ func (lsServer *LsServer) handleConn(localConn *net.TCPConn) {
 	        +----+-----+-------+------+----------+----------+
 	*/
 
+	// 获取真正的远程服务的地址
+	n, err := lsServer.DecodeRead(localConn, buf)
+	// n 最短的长度为7 情况为 ATYP=3 DST.ADDR占用1字节 值为0x0
+	if err != nil || n < 7 {
+		return
+	}
 	// CMD代表客户端请求的类型，值长度也是1个字节，有三种类型
 	// CONNECT X'01'
 	if buf[1] != 0x01 {
@@ -105,12 +111,6 @@ func (lsServer *LsServer) handleConn(localConn *net.TCPConn) {
 		return
 	}
 
-	// 获取真正的远程服务的地址
-	n, err := lsServer.DecodeRead(localConn, buf)
-	// n 最短的长度为7 情况为 ATYP=3 DST.ADDR占用1字节 值为0x0
-	if err != nil || n < 7 {
-		return
-	}
 	var dIP []byte
 	// aType 代表请求的远程服务器地址类型，值长度1个字节，有三种类型
 	switch buf[3] {
