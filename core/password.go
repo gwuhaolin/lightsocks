@@ -44,10 +44,10 @@ func RandPassword() *Password {
 	password := &Password{}
 	for i, v := range intArr {
 		password[i] = byte(v)
-		if i == v {
+		/*if i == v {
 			// 确保不会出现如何一个byte位出现重复
 			return RandPassword()
-		}
+		}*/
 	}
 	return password
 }
