@@ -25,7 +25,6 @@ func (cipher *cipher) decode(bs []byte) {
 func newCipher(encodePassword *password) *cipher {
 	decodePassword := &password{}
 	for i, v := range encodePassword {
-		encodePassword[i] = v
 		decodePassword[v] = byte(i)
 	}
 	return &cipher{
